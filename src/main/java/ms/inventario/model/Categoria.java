@@ -1,0 +1,6 @@
+package ms.inventario.model;
+
+public enum Categoria {
+    FICCION, NO_FICCION, ROMANCE, EDUCATIVO, TERROR,
+    HISTORIA, INFANTIL, NOVELA_GRAFICA, RELIGION, POLITICA, CIENCIA_FICCION
+}

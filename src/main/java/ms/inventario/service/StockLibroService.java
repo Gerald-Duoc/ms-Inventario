@@ -1,0 +1,74 @@
+package ms.inventario.service;
+
+import lombok.RequiredArgsConstructor;
+import ms.inventario.model.StockLibro;
+import ms.inventario.model.StockLibroDTO;
+import ms.inventario.repository.StockLibroRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class StockLibroService {
+
+    private final StockLibroRepository repository;
+
+    private StockLibroDTO toDTO(StockLibro s) {
+        StockLibroDTO dto = new StockLibroDTO();
+        dto.setId(s.getId());
+        dto.setIdLibro(s.getIdLibro());
+        dto.setIdSucursal(s.getIdSucursal());
+        dto.setStockMinimo(s.getStockMinimo());
+        dto.setStockMaximo(s.getStockMaximo());
+        dto.setStock(s.getStock());
+        return dto;
+    }
+
+    private StockLibro toEntity(StockLibroDTO dto) {
+        StockLibro s = new StockLibro();
+        s.setId(dto.getId());
+        s.setIdLibro(dto.getIdLibro());
+        s.setIdSucursal(dto.getIdSucursal());
+        s.setStockMinimo(dto.getStockMinimo());
+        s.setStockMaximo(dto.getStockMaximo());
+        s.setStock(dto.getStock());
+        return s;
+    }
+
+    public List<StockLibroDTO> listar() {
+        return repository.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public Optional<StockLibroDTO> buscar(Long id) {
+        return repository.findById(id).map(this::toDTO);
+    }
+
+    public StockLibroDTO guardar(StockLibroDTO dto) {
+        StockLibro s = toEntity(dto);
+        s.setId(null);
+        return toDTO(repository.save(s));
+    }
+
+    public StockLibroDTO actualizar(Long id, StockLibroDTO dto) {
+        StockLibro existente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("StockLibro no encontrado"));
+        existente.setIdLibro(dto.getIdLibro());
+        existente.setIdSucursal(dto.getIdSucursal());
+        existente.setStockMinimo(dto.getStockMinimo());
+        existente.setStockMaximo(dto.getStockMaximo());
+        existente.setStock(dto.getStock());
+
+        // ---------- FUTURA CONEXIÓN CON MONITOREOGE-MS (US-INV-04) ----------
+        // Si existente.getStock() < existente.getStockMinimo()
+        // se debe enviar una alerta a monitoreoge-ms (ej. vía RestTemplate o RabbitMQ).
+
+        return toDTO(repository.save(existente));
+    }
+
+    public void eliminar(Long id) {
+        repository.deleteById(id);
+    }
+}
