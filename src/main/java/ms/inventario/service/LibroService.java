@@ -3,6 +3,7 @@ package ms.inventario.service;
 import lombok.RequiredArgsConstructor;
 import ms.inventario.model.Libro;
 import ms.inventario.model.LibroDTO;
+import ms.inventario.model.StockLibroDTO;
 import ms.inventario.repository.LibroRepository;
 import org.springframework.stereotype.Service;
 
@@ -80,5 +81,9 @@ public class LibroService {
         return repository.findByNombreContainingIgnoreCase(nombre)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
-    
+    public Double obtenerPrecio(Long id) {
+        Libro libro = repository.findById(id)
+             .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+        return libro.getPrecioVenta();
+    }
 }

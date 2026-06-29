@@ -120,5 +120,8 @@ public class StockLibroService {
         }
         return true;
     }
-    
+    public Optional<StockLibroDTO> buscarPorLibroYSucursal(Long idLibro, Long idSucursal) {
+        return repository.findByIdLibroAndIdSucursal(idLibro, idSucursal)
+                .map(this::toDTO);
+    }
 }

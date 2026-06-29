@@ -48,4 +48,9 @@ public class LibroController {
     public ResponseEntity<List<LibroDTO>> buscarPorNombre(@RequestParam String nombre) {
         return ResponseEntity.ok(service.buscarPorNombre(nombre));
     }
+    @GetMapping("/{id}/precio")
+    public ResponseEntity<Double> obtenerPrecio(@PathVariable Long id) {
+        return ResponseEntity.ok(service.obtenerPrecio(id));
+    }
+    
 }
