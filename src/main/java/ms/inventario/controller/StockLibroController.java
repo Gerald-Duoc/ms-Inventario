@@ -1,13 +1,22 @@
 package ms.inventario.controller;
 
-import lombok.RequiredArgsConstructor;
-import ms.inventario.model.StockLibroDTO;
-import ms.inventario.service.StockLibroService;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import ms.inventario.model.StockLibroDTO;
+import ms.inventario.model.ValidarStockRequest;
+import ms.inventario.service.StockLibroService;
 
 @RestController
 @RequestMapping("/api/stock-libros")
@@ -43,5 +52,28 @@ public class StockLibroController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+    @PostMapping("/añadir")
+    public ResponseEntity<String> añadirStock(@RequestBody StockLibroDTO dto) {
+        try {
+            service.añadirStock(dto.getIdLibro(),dto.getIdSucursal(),dto.getStock());
+        return ResponseEntity.ok("Stock añadido correctamente");
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+    }
+    @PostMapping("/reducir")
+    public ResponseEntity<String> reducirStock(@RequestBody StockLibroDTO dto) {
+        try {
+            service.reducirStock(dto.getIdLibro(),dto.getIdSucursal(),dto.getStock());
+            return ResponseEntity.ok("Stock reducido correctamente");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @PostMapping("/validar")
+    public ResponseEntity<Boolean> validarStock(@RequestBody ValidarStockRequest request) {
+        boolean suficiente = service.validarStockSuficiente(request);
+        return ResponseEntity.ok(suficiente);
     }
 }

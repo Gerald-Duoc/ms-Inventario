@@ -44,4 +44,8 @@ public class LibroController {
         service.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/buscar")
+    public ResponseEntity<List<LibroDTO>> buscarPorNombre(@RequestParam String nombre) {
+        return ResponseEntity.ok(service.buscarPorNombre(nombre));
+    }
 }

@@ -3,6 +3,7 @@ package ms.inventario.service;
 import lombok.RequiredArgsConstructor;
 import ms.inventario.model.StockLibro;
 import ms.inventario.model.StockLibroDTO;
+import ms.inventario.model.ValidarStockRequest;
 import ms.inventario.repository.StockLibroRepository;
 import org.springframework.stereotype.Service;
 
@@ -71,4 +72,53 @@ public class StockLibroService {
     public void eliminar(Long id) {
         repository.deleteById(id);
     }
+
+    public void añadirStock(Long idLibro, Long idSucursal, int cantidad) {
+        Optional<StockLibro> existente = repository.findAll().stream()
+                .filter(s -> s.getIdLibro().equals(idLibro) && s.getIdSucursal().equals(idSucursal))
+                .findFirst();
+
+        if (existente.isPresent()) {
+            StockLibro s = existente.get();
+            s.setStock(s.getStock() + cantidad);
+            repository.save(s);
+        } else {
+            StockLibro nuevo = new StockLibro();
+            nuevo.setIdLibro(idLibro);
+            nuevo.setIdSucursal(idSucursal);
+            nuevo.setStock(cantidad);
+            nuevo.setStockMinimo(0);
+            nuevo.setStockMaximo(100);
+            repository.save(nuevo);
+        }
+    }
+
+    public void reducirStock(Long idLibro, Long idSucursal, int cantidad) {
+        StockLibro stock = repository.findAll().stream()
+                .filter(s -> s.getIdLibro().equals(idLibro) && s.getIdSucursal().equals(idSucursal))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No existe stock del libro en la sucursal indicada"));
+
+        if (stock.getStock() < cantidad) {
+            throw new RuntimeException("Stock insuficiente. Disponible: " + stock.getStock());
+        }
+
+        stock.setStock(stock.getStock() - cantidad);
+        repository.save(stock);
+
+        // ---------- FUTURA CONEXIÓN CON MONITOREOGE‑MS ----------
+        // Si después de reducir, stock.getStock() < stock.getStockMinimo(),
+        // se debe enviar alerta a monitoreoge‑ms (cuando esté implementado).
+    }
+
+    public boolean validarStockSuficiente(ValidarStockRequest request) {
+        for (ValidarStockRequest.ItemCantidad item : request.getItems()) {
+            StockLibro stock = repository.findAll().stream().filter(s -> s.getIdLibro().equals(item.getIdLibro())&& s.getIdSucursal().equals(request.getIdSucursal())).findFirst().orElse(null);
+            if (stock == null || stock.getStock() < item.getCantidad()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 }

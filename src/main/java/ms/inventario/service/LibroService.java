@@ -75,4 +75,10 @@ public class LibroService {
     public void eliminar(Long id) {
         repository.deleteById(id);
     }
+    public List<LibroDTO> buscarPorNombre(String nombre) {
+
+        return repository.findByNombreContainingIgnoreCase(nombre)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+    
 }
