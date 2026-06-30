@@ -52,5 +52,16 @@ public class LibroController {
     public ResponseEntity<Double> obtenerPrecio(@PathVariable Long id) {
         return ResponseEntity.ok(service.obtenerPrecio(id));
     }
-    
+
+    @PostMapping("/{id}/unidades-vendidas")
+    public ResponseEntity<String> registrarUnidadesVendidas(
+            @PathVariable Long id,
+            @RequestParam int cantidad) {
+        try {
+            service.registrarUnidadesVendidas(id, cantidad);
+            return ResponseEntity.ok("Unidades vendidas registradas");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

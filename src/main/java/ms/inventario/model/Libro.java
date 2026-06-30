@@ -27,4 +27,7 @@ public class Libro {
 
     @Temporal(TemporalType.DATE)
     private Date fechaCreacion;
+
+    @Column(name = "unidades_vendidas")
+    private int unidadesVendidas = 0;
 }

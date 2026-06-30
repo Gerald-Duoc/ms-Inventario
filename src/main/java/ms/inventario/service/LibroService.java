@@ -28,6 +28,7 @@ public class LibroService {
         dto.setPrecioVenta(l.getPrecioVenta());
         dto.setCategoria(l.getCategoria());
         dto.setFechaCreacion(l.getFechaCreacion());
+        dto.setUnidadesVendidas(l.getUnidadesVendidas());
         return dto;
     }
 
@@ -42,6 +43,7 @@ public class LibroService {
         l.setPrecioVenta(dto.getPrecioVenta());
         l.setCategoria(dto.getCategoria());
         l.setFechaCreacion(dto.getFechaCreacion());
+        l.setUnidadesVendidas(dto.getUnidadesVendidas());
         return l;
     }
 
@@ -85,5 +87,15 @@ public class LibroService {
         Libro libro = repository.findById(id)
              .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
         return libro.getPrecioVenta();
+    }
+
+    public void registrarUnidadesVendidas(Long idLibro, int cantidad) {
+        if (cantidad < 1) {
+            throw new RuntimeException("La cantidad debe ser 1 o superior");
+        }
+        Libro libro = repository.findById(idLibro)
+                .orElseThrow(() -> new RuntimeException("Libro no encontrado"));
+        libro.setUnidadesVendidas(libro.getUnidadesVendidas() + cantidad);
+        repository.save(libro);
     }
 }

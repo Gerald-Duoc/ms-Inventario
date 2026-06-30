@@ -14,4 +14,5 @@ public class LibroDTO {
     private double precioVenta;
     private Categoria categoria;
     private Date fechaCreacion;
+    private int unidadesVendidas;
 }
