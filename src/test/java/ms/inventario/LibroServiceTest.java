@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -35,7 +37,7 @@ public class LibroServiceTest {
     @BeforeEach
     void setUp() {
         libro = new Libro(1L, "Cien años", "Novela", "Sudamericana", "García Márquez",
-                5000.0, 9900.0, Categoria.FICCION, new Date());
+                5000.0, 9900.0, Categoria.FICCION, new Date(), 0);
     }
 
     @Test
@@ -93,5 +95,27 @@ public class LibroServiceTest {
         when(repository.findById(1L)).thenReturn(Optional.of(libro));
         Double precio = service.obtenerPrecio(1L);
         assertThat(precio).isEqualTo(9900.0);
+    }
+
+    @Test
+    void testRegistrarUnidadesVendidas_Success() {
+        when(repository.findById(1L)).thenReturn(Optional.of(libro));
+        when(repository.save(any(Libro.class))).thenReturn(libro);
+        service.registrarUnidadesVendidas(1L, 5);
+        verify(repository).save(libro);
+        assertThat(libro.getUnidadesVendidas()).isEqualTo(5);
+    }
+
+    @Test
+    void testRegistrarUnidadesVendidas_LibroNotFound() {
+        when(repository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(RuntimeException.class,
+                () -> service.registrarUnidadesVendidas(99L, 5));
+    }
+
+    @Test
+    void testRegistrarUnidadesVendidas_CantidadInvalida() {
+        assertThrows(RuntimeException.class,
+                () -> service.registrarUnidadesVendidas(1L, 0));
     }
 }
