@@ -1,71 +1,45 @@
-# Inventario (ms-Inventario)
+# Inventario — Catalogo y Stock
 
-Gestion de libros, stock por sucursal, y reservas. Microservicio central del catalogo de la libreria.
+## Que es
 
-## Puerto
+El corazon del catalogo de la libreria. Este microservicio es la fuente de verdad de **que libros existen**, **cuantos hay en cada sucursal**, y **que reservas hay pendientes**. No vende nada ni despacha — solo lleva la cuenta del inventario fisico.
 
-**8094** | DB: `inventario_ms`
+## Los tres dominios
 
-## Endpoints
+### 1. Libros (catalogo)
 
-### Libros (`/api/libros`)
+Cada libro tiene titulo, autor, editorial, precio de compra (lo que la libreria paga), precio de venta (lo que paga el cliente), categoria, y un contador de unidades vendidas. Las 11 categorias son fijas: `FICCION`, `NO_FICCION`, `ROMANCE`, `EDUCATIVO`, `TERROR`, `HISTORIA`, `INFANTIL`, `NOVELA_GRAFICA`, `RELIGION`, `POLITICA`, `CIENCIA_FICCION`.
 
-| Metodo | Ruta | Descripcion |
-|--------|------|-------------|
-| GET | `/api/libros` | Listar todos |
-| GET | `/api/libros/{id}` | Obtener por ID |
-| GET | `/api/libros/buscar?nombre=` | Buscar por nombre |
-| GET | `/api/libros/{id}/precio` | Obtener precio de venta |
-| POST | `/api/libros` | Crear libro |
-| PUT | `/api/libros/{id}` | Actualizar libro |
-| DELETE | `/api/libros/{id}` | Eliminar libro |
-| POST | `/api/libros/{id}/unidades-vendidas?cantidad=` | Incrementar unidades vendidas |
+### 2. Stock por sucursal
 
-### Stock (`/api/stock-libros`)
+Aqui es donde se pone interesante. La libreria tiene 2 sucursales fisicas (Centro en Santiago, Norte en Antofagasta). Cada libro puede tener diferente cantidad de ejemplares en cada sucursal, con un **stock minimo** (para alertas) y un **stock maximo** (capacidad del estante). La entidad `StockLibro` es el puente: vincula un libro con una sucursal y guarda las cantidades.
 
-| Metodo | Ruta | Descripcion |
-|--------|------|-------------|
-| GET | `/api/stock-libros` | Listar todo el stock |
-| GET | `/api/stock-libros/{id}` | Obtener por ID |
-| POST | `/api/stock-libros` | Crear registro de stock |
-| PUT | `/api/stock-libros/{id}` | Actualizar stock |
-| DELETE | `/api/stock-libros/{id}` | Eliminar registro |
-| POST | `/api/stock-libros/anadir` | Anadir stock |
-| POST | `/api/stock-libros/reducir` | Reducir stock |
-| POST | `/api/stock-libros/validar` | Validar stock suficiente |
+**Operaciones importantes:**
+- `anadir` — Cuando llega mercaderia de un proveedor o se transfiere desde otra sucursal, se suman ejemplares.
+- `reducir` — Cuando se hace una venta, se restan ejemplares. Si no hay stock suficiente, la operacion se rechaza con un error.
+- `validar` — Antes de procesar un carrito de compras, se verifica que **todos** los productos tengan stock suficiente en la sucursal elegida.
 
-### Reservas (`/api/reservas`)
+### 3. Reservas
 
-| Metodo | Ruta | Descripcion |
-|--------|------|-------------|
-| GET | `/api/reservas` | Listar reservas |
-| GET | `/api/reservas/{id}` | Obtener por ID |
-| POST | `/api/reservas` | Crear reserva |
-| DELETE | `/api/reservas/{id}` | Eliminar reserva |
+Cuando un cliente hace un pedido online, los libros se "reservan" para que otro cliente no los compre antes. Las reservas estan parcialmente implementadas — se guardan pero aun no descuentan stock automaticamente.
 
-## Crear libro
+## Que otros servicios usan
 
-```json
-POST /api/libros
-{
-  "nombre": "Cien Anos de Soledad",
-  "descripcion": "Novela del realismo magico",
-  "editorial": "Sudamericana",
-  "autor": "Gabriel Garcia Marquez",
-  "precioCompra": 5000,
-  "precioVenta": 15000,
-  "categoria": "FICCION",
-  "fechaCreacion": "2026-01-15"
-}
-```
+- **TiendaWeb** consulta el catalogo para mostrar productos, verifica stock antes de agregar al carrito, y reserva stock al confirmar una compra.
+- **Ventas** consulta precios y valida stock antes de procesar una venta. Tambien descuenta stock y registra unidades vendidas despues de finalizar.
+- **Sucursal** llama a las operaciones de stock cuando se aprueba una transferencia entre sucursales.
 
-### Categorias validas
-
-`FICCION`, `NO_FICCION`, `ROMANCE`, `EDUCATIVO`, `TERROR`, `HISTORIA`, `INFANTIL`, `NOVELA_GRAFICA`, `RELIGION`, `POLITICA`, `CIENCIA_FICCION`
-
-## Ejecucion
+## Ejecutar
 
 ```cmd
 cd ms-Inventario
 .\mvnw.cmd spring-boot:run
 ```
+
+Puerto: **8094** | DB: `inventario_ms`
+
+## Endpoints
+
+**Libros** (`/api/libros`): CRUD completo + busqueda por nombre + precio + unidades vendidas.
+**Stock** (`/api/stock-libros`): CRUD + `/anadir` + `/reducir` + `/validar`.
+**Reservas** (`/api/reservas`): Crear, listar, ver, eliminar.
