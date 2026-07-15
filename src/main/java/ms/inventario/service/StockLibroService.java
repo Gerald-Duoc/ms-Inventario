@@ -112,8 +112,15 @@ public class StockLibroService {
     }
 
     public boolean validarStockSuficiente(ValidarStockRequest request) {
+        System.out.println("[DEBUG] validarStock: idSucursal=" + request.getIdSucursal());
         for (ValidarStockRequest.ItemCantidad item : request.getItems()) {
-            StockLibro stock = repository.findAll().stream().filter(s -> s.getIdLibro().equals(item.getIdLibro())&& s.getIdSucursal().equals(request.getIdSucursal())).findFirst().orElse(null);
+            System.out.println("[DEBUG]   item: idLibro=" + item.getIdLibro() + ", cantidad=" + item.getCantidad());
+            StockLibro stock = repository.findAll().stream()
+                .filter(s -> s.getIdLibro().equals(item.getIdLibro()) && s.getIdSucursal().equals(request.getIdSucursal()))
+                .findFirst().orElse(null);
+            System.out.println("[DEBUG]   encontrado: " + (stock != null
+                ? "stock=" + stock.getStock() + ", idLibro=" + stock.getIdLibro() + ", idSucursal=" + stock.getIdSucursal()
+                : "null"));
             if (stock == null || stock.getStock() < item.getCantidad()) {
                 return false;
             }

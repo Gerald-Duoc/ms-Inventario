@@ -1,5 +1,6 @@
 package ms.inventario.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.util.Date;
 
@@ -13,6 +14,7 @@ public class LibroDTO {
     private double precioCompra;
     private double precioVenta;
     private Categoria categoria;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date fechaCreacion;
     private int unidadesVendidas;
 }
